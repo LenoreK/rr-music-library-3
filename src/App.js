@@ -1,15 +1,17 @@
 import './App.css';
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import Gallery from './components/Gallery'
 import SearchBar from './components/SearchBar'
+import Spinner from './components/spinner'
 
 function App() {
   let [searchTerm, setSearchTerm] = useState('')
-  let [data, setData] = useState([])
+  let [data, setData] = useState([null])
   let [message, setMessage] = useState('Search for Music!')
 
   useEffect(() => {
     if (searchTerm) {
+      setData(fetchData(searchData))
       document.title=`${searchTerm} Music`
       const fetchData = async () => {
         const response = await fetch(`https://itunes.apple.com/search?term=${searchTerm}`)
@@ -29,11 +31,21 @@ function App() {
     setSearchTerm(term)
   }
 
+  const renderGallery = () => {
+    if(data){
+      return (
+        <Suspense fallback={<h1>{<Spinner />}</h1>}>
+        <Gallery data={data} />
+        </Suspense>
+      )
+    }
+  }
+
   return (
     <div className="App">
       <SearchBar handleSearch={handleSearch} />
       {message}
-      <Gallery data={data} />
+      {renderGallery()}
     </div>
   );
 }
